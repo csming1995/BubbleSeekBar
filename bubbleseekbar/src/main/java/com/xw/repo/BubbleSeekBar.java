@@ -89,7 +89,6 @@ public class BubbleSeekBar extends View {
     private long mAnimDuration; // duration of animation
     private boolean isAlwaysShowBubble; // bubble shows all time
 
-    private int mBubbleColor;// color of bubble
     private int mBubbleTextSize; // text size of bubble-progress
     private int mBubbleTextColor; // text color of bubble-progress
 
@@ -168,7 +167,6 @@ public class BubbleSeekBar extends View {
         isShowThumbText = a.getBoolean(R.styleable.BubbleSeekBar_bsb_show_thumb_text, false);
         mThumbTextSize = a.getDimensionPixelSize(R.styleable.BubbleSeekBar_bsb_thumb_text_size, sp2px(10));
         mThumbTextColor = a.getColor(R.styleable.BubbleSeekBar_bsb_thumb_text_color, mSecondTrackColor);
-        mBubbleColor = a.getColor(R.styleable.BubbleSeekBar_bsb_bubble_color, mSecondTrackColor);
         mBubbleTextSize = a.getDimensionPixelSize(R.styleable.BubbleSeekBar_bsb_bubble_text_size, sp2px(10));
         mBubbleTextColor = a.getColor(R.styleable.BubbleSeekBar_bsb_bubble_text_color, Color.BLACK);
         isShowSectionMark = a.getBoolean(R.styleable.BubbleSeekBar_bsb_show_section_mark, false);
@@ -959,7 +957,6 @@ public class BubbleSeekBar extends View {
         isShowProgressInFloat = builder.showProgressInFloat;
         isTouchToSeek = builder.touchToSeek;
         isSeekBySection = builder.seekBySection;
-        mBubbleColor = builder.bubbleColor;
         mBubbleTextSize = builder.bubbleTextSize;
         mBubbleTextColor = builder.bubbleTextColor;
         isAlwaysShowBubble = builder.alwaysShowBubble;
@@ -1007,7 +1004,6 @@ public class BubbleSeekBar extends View {
         mConfigBuilder.showProgressInFloat = isShowProgressInFloat;
         mConfigBuilder.touchToSeek = isTouchToSeek;
         mConfigBuilder.seekBySection = isSeekBySection;
-        mConfigBuilder.bubbleColor = mBubbleColor;
         mConfigBuilder.bubbleTextSize = mBubbleTextSize;
         mConfigBuilder.bubbleTextColor = mBubbleTextColor;
         mConfigBuilder.alwaysShowBubble = isAlwaysShowBubble;
