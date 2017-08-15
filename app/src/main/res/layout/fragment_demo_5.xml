@@ -10,10 +10,14 @@
     <com.xw.repo.BubbleSeekBar
         android:id="@+id/demo_5_seek_bar_1"
         android:layout_width="match_parent"
-        android:layout_height="16dp"
+        android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         app:bsb_second_track_color="@color/colorSeekBarProgressContent"
         app:bsb_track_color="@color/colorSeekBarProgressBackground"
         app:bsb_touch_to_seek="true"
+        app:bsb_second_track_size="2dp"
+        app:bsb_track_size="2dp"
+        app:bsb_bubble_size="21.5dp"
+        app:bsb_thumb_radius="6.5dp"
         app:bsb_thumb_drawable="@drawable/btn_live_controlshaft_normal"/>
 </LinearLayout>

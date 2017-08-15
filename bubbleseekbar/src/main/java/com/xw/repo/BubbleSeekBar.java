@@ -149,7 +149,7 @@ public class BubbleSeekBar extends View {
                 mTrackSize + dp2px(2));
 
         mThumbRadius = a.getDimensionPixelSize(R.styleable.BubbleSeekBar_bsb_thumb_radius,
-                mSecondTrackSize + dp2px(13));
+                mSecondTrackSize + dp2px(2));
         mThumbRadiusOnDragging = a.getDimensionPixelSize(R.styleable.BubbleSeekBar_bsb_thumb_radius,
                 mSecondTrackSize * 2);
 
@@ -160,8 +160,8 @@ public class BubbleSeekBar extends View {
             mThumbMatrix = new Matrix();
             mIsThumbBitmap = true;
             mThumbBitmap = BitmapFactory.decodeResource(context.getResources(), mThumbId);
-            float scaleWidth = (float) mThumbRadius / (float) mThumbBitmap.getWidth();
-            float scaleHeight = (float)mThumbRadius / (float) mThumbBitmap.getHeight();
+            float scaleWidth = (float) mThumbRadius * 2 / (float) mThumbBitmap.getWidth();
+            float scaleHeight = (float) mThumbRadius * 2 / (float) mThumbBitmap.getHeight();
             mThumbMatrix.postScale(scaleWidth, scaleHeight);
         }
 
@@ -185,6 +185,8 @@ public class BubbleSeekBar extends View {
         } else {
             mSectionTextPosition = NONE;
         }
+
+        mBubbleSize = a.getDimensionPixelSize(R.styleable.BubbleSeekBar_bsb_bubble_size, dp2px(21));
         mSectionTextInterval = a.getInteger(R.styleable.BubbleSeekBar_bsb_section_text_interval, 1);
         isShowThumbText = a.getBoolean(R.styleable.BubbleSeekBar_bsb_show_thumb_text, false);
         mThumbTextSize = a.getDimensionPixelSize(R.styleable.BubbleSeekBar_bsb_thumb_text_size, sp2px(10));
@@ -314,7 +316,6 @@ public class BubbleSeekBar extends View {
         mPaint.getTextBounds(text, 0, text.length(), mRectText);
         int w2 = (mRectText.width() + mTextSpace * 2) >> 1;
 
-        mBubbleSize = dp2px(21); // default 21dp
         int max = Math.max(mBubbleSize, Math.max(w1, w2));
         mBubbleSize = max + mTextSpace;
     }
@@ -404,6 +405,7 @@ public class BubbleSeekBar extends View {
 
         mBubbleCenterRawSolidX = mPoint[0] + mLeft - mBubbleView.getMeasuredWidth() / 2f;
         mBubbleCenterRawX = mBubbleCenterRawSolidX + mTrackLength * (mProgress - mMin) / mDelta;
+//        mBubbleCenterRawSolidY = mPoint[1] - mThumbRadius;
         mBubbleCenterRawSolidY = mPoint[1] - mBubbleView.getMeasuredHeight();
         mBubbleCenterRawSolidY -= dp2px(24);
         if (BubbleUtils.isMIUI()) {
@@ -541,7 +543,7 @@ public class BubbleSeekBar extends View {
          * 若有，则绘制外部传入的bitmap
          */
         if (mIsThumbBitmap){
-            canvas.translate(mThumbCenterX - mThumbRadius/2, yTop - mThumbRadius/2);
+            canvas.translate(mThumbCenterX - mThumbRadius, yTop - mThumbRadius);
             canvas.drawBitmap(mThumbBitmap, mThumbMatrix, mPaint);
         }else {
             mPaint.setColor(mThumbColor);
@@ -1120,8 +1122,6 @@ public class BubbleSeekBar extends View {
     private class BubbleView extends View {
 
         private Paint mBubblePaint;
-        private Path mBubblePath;
-        private RectF mBubbleRectF;
         private Rect mRect;
         private String mProgressText = "";
 
@@ -1144,8 +1144,6 @@ public class BubbleSeekBar extends View {
             mBubblePaint.setAntiAlias(true);
             mBubblePaint.setTextAlign(Paint.Align.CENTER);
 
-            mBubblePath = new Path();
-            mBubbleRectF = new RectF();
             mRect = new Rect();
 
             mBackground = BitmapFactory.decodeResource(context.getResources(), R.drawable.bg_live_bubble_normal);
@@ -1175,8 +1173,10 @@ public class BubbleSeekBar extends View {
             mBubblePaint.setColor(mBubbleTextColor);
             mBubblePaint.getTextBounds(mProgressText, 0, mProgressText.length(), mRect);
             Paint.FontMetrics fm = mBubblePaint.getFontMetrics();
-            float baseline = mBubbleSize/2 + (fm.descent - fm.ascent) / 2f - fm.descent;
-            canvas.drawText(mProgressText, getMeasuredWidth() / 2f, baseline, mBubblePaint);
+
+            float baseline = mBackgroundScale * (float) mBackground.getHeight() * (21.0f / 49.0f)
+                    + (fm.descent - fm.ascent) / 2f - fm.descent;
+            canvas.drawText(mProgressText, getMeasuredWidth() / 2f - 0.5f, baseline, mBubblePaint);
         }
 
         void setProgressText(String progressText) {
