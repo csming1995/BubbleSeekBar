@@ -1166,6 +1166,7 @@ public class BubbleSeekBar extends View {
 
             mBackgroundScale = (float)mBubbleSize / (float)(mBackground.getWidth());
 
+
             mBackgroundMatrix.setScale(mBackgroundScale, mBackgroundScale);
             canvas.drawBitmap(mBackground, mBackgroundMatrix, mPaint);
 
