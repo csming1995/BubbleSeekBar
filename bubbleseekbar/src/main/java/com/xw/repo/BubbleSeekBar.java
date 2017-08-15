@@ -7,8 +7,11 @@ import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.res.TypedArray;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PixelFormat;
@@ -21,6 +24,7 @@ import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
@@ -107,7 +111,7 @@ public class BubbleSeekBar extends View {
 
     private WindowManager mWindowManager;
     private BubbleView mBubbleView;
-    private int mBubbleRadius;
+    private int mBubbleSize;
     private float mBubbleCenterRawSolidX;
     private float mBubbleCenterRawSolidY;
     private float mBubbleCenterRawX;
@@ -162,11 +166,11 @@ public class BubbleSeekBar extends View {
         }
         mSectionTextInterval = a.getInteger(R.styleable.BubbleSeekBar_bsb_section_text_interval, 1);
         isShowThumbText = a.getBoolean(R.styleable.BubbleSeekBar_bsb_show_thumb_text, false);
-        mThumbTextSize = a.getDimensionPixelSize(R.styleable.BubbleSeekBar_bsb_thumb_text_size, sp2px(14));
+        mThumbTextSize = a.getDimensionPixelSize(R.styleable.BubbleSeekBar_bsb_thumb_text_size, sp2px(10));
         mThumbTextColor = a.getColor(R.styleable.BubbleSeekBar_bsb_thumb_text_color, mSecondTrackColor);
         mBubbleColor = a.getColor(R.styleable.BubbleSeekBar_bsb_bubble_color, mSecondTrackColor);
-        mBubbleTextSize = a.getDimensionPixelSize(R.styleable.BubbleSeekBar_bsb_bubble_text_size, sp2px(14));
-        mBubbleTextColor = a.getColor(R.styleable.BubbleSeekBar_bsb_bubble_text_color, Color.WHITE);
+        mBubbleTextSize = a.getDimensionPixelSize(R.styleable.BubbleSeekBar_bsb_bubble_text_size, sp2px(10));
+        mBubbleTextColor = a.getColor(R.styleable.BubbleSeekBar_bsb_bubble_text_color, Color.BLACK);
         isShowSectionMark = a.getBoolean(R.styleable.BubbleSeekBar_bsb_show_section_mark, false);
         isAutoAdjustSectionMark = a.getBoolean(R.styleable.BubbleSeekBar_bsb_auto_adjust_section_mark, false);
         isShowProgressInFloat = a.getBoolean(R.styleable.BubbleSeekBar_bsb_show_progress_in_float, false);
@@ -290,9 +294,9 @@ public class BubbleSeekBar extends View {
         mPaint.getTextBounds(text, 0, text.length(), mRectText);
         int w2 = (mRectText.width() + mTextSpace * 2) >> 1;
 
-        mBubbleRadius = dp2px(14); // default 14dp
-        int max = Math.max(mBubbleRadius, Math.max(w1, w2));
-        mBubbleRadius = max + mTextSpace;
+        mBubbleSize = dp2px(21); // default 21dp
+        int max = Math.max(mBubbleSize, Math.max(w1, w2));
+        mBubbleSize = max + mTextSpace;
     }
 
     @Override
@@ -1090,6 +1094,10 @@ public class BubbleSeekBar extends View {
         private Rect mRect;
         private String mProgressText = "";
 
+        private Bitmap mBackground;
+        private float mBackgroundScale;
+        private Matrix mBackgroundMatrix;
+
         BubbleView(Context context) {
             this(context, null);
         }
@@ -1108,49 +1116,35 @@ public class BubbleSeekBar extends View {
             mBubblePath = new Path();
             mBubbleRectF = new RectF();
             mRect = new Rect();
+
+            mBackground = BitmapFactory.decodeResource(context.getResources(), R.drawable.bg_live_bubble_normal);
+            mBackgroundScale = 1;
+            mBackgroundMatrix = new Matrix();
         }
 
         @Override
         protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
             super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 
-            setMeasuredDimension(3 * mBubbleRadius, 3 * mBubbleRadius);
+            setMeasuredDimension(mBubbleSize, mBubbleSize);
 
-            mBubbleRectF.set(getMeasuredWidth() / 2f - mBubbleRadius, 0,
-                    getMeasuredWidth() / 2f + mBubbleRadius, 2 * mBubbleRadius);
         }
 
         @Override
         protected void onDraw(Canvas canvas) {
             super.onDraw(canvas);
 
-            mBubblePath.reset();
-            float x0 = getMeasuredWidth() / 2f;
-            float y0 = getMeasuredHeight() - mBubbleRadius / 3f;
-            mBubblePath.moveTo(x0, y0);
-            float x1 = (float) (getMeasuredWidth() / 2f - Math.sqrt(3) / 2f * mBubbleRadius);
-            float y1 = 3 / 2f * mBubbleRadius;
-            mBubblePath.quadTo(
-                    x1 - dp2px(2), y1 - dp2px(2),
-                    x1, y1
-            );
-            mBubblePath.arcTo(mBubbleRectF, 150, 240);
 
-            float x2 = (float) (getMeasuredWidth() / 2f + Math.sqrt(3) / 2f * mBubbleRadius);
-            mBubblePath.quadTo(
-                    x2 + dp2px(2), y1 - dp2px(2),
-                    x0, y0
-            );
-            mBubblePath.close();
+            mBackgroundScale = (float)mBubbleSize / (float)(mBackground.getWidth());
 
-            mBubblePaint.setColor(mBubbleColor);
-            canvas.drawPath(mBubblePath, mBubblePaint);
+            mBackgroundMatrix.setScale(mBackgroundScale, mBackgroundScale);
+            canvas.drawBitmap(mBackground, mBackgroundMatrix, mPaint);
 
             mBubblePaint.setTextSize(mBubbleTextSize);
             mBubblePaint.setColor(mBubbleTextColor);
             mBubblePaint.getTextBounds(mProgressText, 0, mProgressText.length(), mRect);
             Paint.FontMetrics fm = mBubblePaint.getFontMetrics();
-            float baseline = mBubbleRadius + (fm.descent - fm.ascent) / 2f - fm.descent;
+            float baseline = mBubbleSize/2 + (fm.descent - fm.ascent) / 2f - fm.descent;
             canvas.drawText(mProgressText, getMeasuredWidth() / 2f, baseline, mBubblePaint);
         }
 
