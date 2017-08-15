@@ -66,8 +66,16 @@ public class BubbleSeekBar extends View {
     private boolean isFloatType; // support for float type output
     private int mTrackSize; // height of right-track(on the right of thumb)
     private int mSecondTrackSize; // height of left-track(on the left of thumb)
+
+    private int mThumbId;
+    private Bitmap mThumbBitmap;// bitmap of thumb
+    private Matrix mThumbMatrix;
+    private boolean mIsThumbBitmap;
+
     private int mThumbRadius; // radius of thumb
     private int mThumbRadiusOnDragging; // radius of thumb when be dragging
+
+
     private int mTrackColor; // color of right-track
     private int mSecondTrackColor; // color of left-track
     private int mThumbColor; // color of thumb
@@ -139,10 +147,24 @@ public class BubbleSeekBar extends View {
         mTrackSize = a.getDimensionPixelSize(R.styleable.BubbleSeekBar_bsb_track_size, dp2px(2));
         mSecondTrackSize = a.getDimensionPixelSize(R.styleable.BubbleSeekBar_bsb_second_track_size,
                 mTrackSize + dp2px(2));
+
         mThumbRadius = a.getDimensionPixelSize(R.styleable.BubbleSeekBar_bsb_thumb_radius,
-                mSecondTrackSize + dp2px(2));
+                mSecondTrackSize + dp2px(13));
         mThumbRadiusOnDragging = a.getDimensionPixelSize(R.styleable.BubbleSeekBar_bsb_thumb_radius,
                 mSecondTrackSize * 2);
+
+        mThumbId = a.getResourceId(R.styleable.BubbleSeekBar_bsb_thumb_drawable, 0);
+        if (0 == mThumbId){
+            mIsThumbBitmap = false;
+        }else {
+            mThumbMatrix = new Matrix();
+            mIsThumbBitmap = true;
+            mThumbBitmap = BitmapFactory.decodeResource(context.getResources(), mThumbId);
+            float scaleWidth = (float) mThumbRadius / (float) mThumbBitmap.getWidth();
+            float scaleHeight = (float)mThumbRadius / (float) mThumbBitmap.getHeight();
+            mThumbMatrix.postScale(scaleWidth, scaleHeight);
+        }
+
         mSectionCount = a.getInteger(R.styleable.BubbleSeekBar_bsb_section_count, 10);
         mTrackColor = a.getColor(R.styleable.BubbleSeekBar_bsb_track_color,
                 ContextCompat.getColor(context, R.color.colorPrimary));
@@ -389,6 +411,8 @@ public class BubbleSeekBar extends View {
         }
     }
 
+
+
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
@@ -510,8 +534,19 @@ public class BubbleSeekBar extends View {
         canvas.drawLine(mThumbCenterX, yTop, xRight, yTop, mPaint);
 
         // draw thumb
-        mPaint.setColor(mThumbColor);
-        canvas.drawCircle(mThumbCenterX, yTop, isThumbOnDragging ? mThumbRadiusOnDragging : mThumbRadius, mPaint);
+
+        /**
+         * 做了一个小改动：
+         * 如果没有ThumbBitmap，则绘制圆形
+         * 若有，则绘制外部传入的bitmap
+         */
+        if (mIsThumbBitmap){
+            canvas.translate(mThumbCenterX - mThumbRadius/2, yTop - mThumbRadius/2);
+            canvas.drawBitmap(mThumbBitmap, mThumbMatrix, mPaint);
+        }else {
+            mPaint.setColor(mThumbColor);
+            canvas.drawCircle(mThumbCenterX, yTop, isThumbOnDragging ? mThumbRadiusOnDragging : mThumbRadius, mPaint);
+        }
     }
 
     @Override
